@@ -1,10 +1,14 @@
 from decimal import Decimal, InvalidOperation
-#how to run the code
-#1st:instrall python
-#2nd:go to cmd and type " python engineered_addition.py "
-#4th:code is executed and enjoy
+
+# HOW TO RUN THE CODE
+# 1. Install Python
+# 2. Open CMD
+# 3. Run: python engineered_addition.py
+# 4. Enjoy the engineered Addition System :)
+
 class NumberParserError(Exception):
     """Custom error raised when a number or word cannot be parsed."""
+
 
 # -------------------------------------
 # Words to Numbers Mapping
@@ -38,14 +42,46 @@ def word_to_number(word):
 # -------------------------------------
 def parse_number(value):
     """
-    Convert input to Decimal. Accepts:
-    - numeric values (10, 20.5)
-    - strings ("10")
+    Convert input to Decimal.
+    Accepts int, float, numeric string.
     """
     try:
         return Decimal(str(value))
     except (InvalidOperation, ValueError):
         raise NumberParserError(f"Invalid number: {value}")
+
+
+# -------------------------------------
+# READ VALUES FROM FILE (Option 3)
+# -------------------------------------
+def read_file_values(filename):
+    values = []
+    try:
+        with open(filename, "r") as f:
+            for line in f:
+                raw = line.strip()
+
+                if not raw:  
+                    continue  # skip empty lines
+
+                try:
+                    # Try number parsing
+                    num = parse_number(raw)
+                    values.append(num)
+                except NumberParserError:
+                    # Try word parsing
+                    try:
+                        num = word_to_number(raw)
+                        values.append(num)
+                    except NumberParserError:
+                        print(f"[SKIPPED INVALID] {raw}")
+                        continue
+
+    except FileNotFoundError:
+        print(f"[ERROR] File not found: {filename}")
+        return None
+
+    return values
 
 
 # -------------------------------------
@@ -59,7 +95,7 @@ def add_numbers(numbers):
 
 
 # -------------------------------------
-# Engineered Choice System
+# Manual Input (Option 1 & 2)
 # -------------------------------------
 def get_user_values(limit, mode):
     values = []
@@ -68,11 +104,9 @@ def get_user_values(limit, mode):
         user_input = input(f"Enter value {i+1}: ")
 
         try:
-            if mode == 1:  
-                # NUMBER MODE
+            if mode == 1:
                 values.append(parse_number(user_input))
-            else:  
-                # WORD MODE
+            else:
                 values.append(word_to_number(user_input))
 
         except NumberParserError as e:
@@ -87,17 +121,30 @@ def get_user_values(limit, mode):
 # -------------------------------------
 if __name__ == "__main__":
     print("=== Engineered Addition System ===")
-    print("1. Enter Numbers")
-    print("2. Enter Words (one, two, twenty five)")
-    
+    print("1. Enter Numbers Manually")
+    print("2. Enter Words Manually")
+    print("3. Read Values from File")
+
     try:
-        mode = int(input("Choose option (1 or 2): "))
-        if mode not in [1, 2]:
+        mode = int(input("Choose option (1 / 2 / 3): "))
+        if mode not in [1, 2, 3]:
             raise ValueError("Invalid option.")
     except ValueError:
-        print("[ERROR] Please choose 1 or 2.")
+        print("[ERROR] Please choose 1, 2, or 3.")
         exit(1)
 
+    # Option 3 → Read from file
+    if mode == 3:
+        filename = input("Enter file name (e.g., values.txt): ")
+        values = read_file_values(filename)
+
+        if values:
+            total = add_numbers(values)
+            print("\nValid Values Count:", len(values))
+            print("Total Sum =", float(total))
+        exit(0)
+
+    # For Option 1 & 2
     try:
         limit = int(input("How many inputs? "))
         if limit <= 0:
